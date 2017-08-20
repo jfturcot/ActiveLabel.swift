@@ -27,10 +27,19 @@ typealias ElementTuple = (range: NSRange, element: ActiveElement, type: ActiveTy
     
     open var configureLinkAttribute: ConfigureLinkAttribute?
 
+    @IBInspectable open var mentionFont: UIFont? = nil {
+        didSet { updateTextStorage(parseText: false) }
+    }
     @IBInspectable open var mentionColor: UIColor = .blue {
         didSet { updateTextStorage(parseText: false) }
     }
     @IBInspectable open var mentionSelectedColor: UIColor? {
+        didSet { updateTextStorage(parseText: false) }
+    }
+    open var mentionUnderlineStyle: NSUnderlineStyle = .styleNone {
+        didSet { updateTextStorage(parseText: false) }
+    }
+    @IBInspectable open var hashtagFont: UIFont? = nil {
         didSet { updateTextStorage(parseText: false) }
     }
     @IBInspectable open var hashtagColor: UIColor = .blue {
@@ -39,16 +48,31 @@ typealias ElementTuple = (range: NSRange, element: ActiveElement, type: ActiveTy
     @IBInspectable open var hashtagSelectedColor: UIColor? {
         didSet { updateTextStorage(parseText: false) }
     }
+    open var hashtagUnderlineStyle: NSUnderlineStyle = .styleNone {
+        didSet { updateTextStorage(parseText: false) }
+    }
+    @IBInspectable open var URLFont: UIFont? = nil {
+        didSet { updateTextStorage(parseText: false) }
+    }
     @IBInspectable open var URLColor: UIColor = .blue {
         didSet { updateTextStorage(parseText: false) }
     }
     @IBInspectable open var URLSelectedColor: UIColor? {
         didSet { updateTextStorage(parseText: false) }
     }
+    open var URLUnderlineStyle: NSUnderlineStyle = .styleNone {
+        didSet { updateTextStorage(parseText: false) }
+    }
+    open var customFont: [ActiveType : UIFont] = [:] {
+        didSet { updateTextStorage(parseText: false) }
+    }
     open var customColor: [ActiveType : UIColor] = [:] {
         didSet { updateTextStorage(parseText: false) }
     }
     open var customSelectedColor: [ActiveType : UIColor] = [:] {
+        didSet { updateTextStorage(parseText: false) }
+    }
+    open var customUnderlineStyle: [ActiveType : NSUnderlineStyle] = [:] {
         didSet { updateTextStorage(parseText: false) }
     }
     @IBInspectable public var lineSpacing: CGFloat = 0 {
@@ -258,7 +282,9 @@ typealias ElementTuple = (range: NSRange, element: ActiveElement, type: ActiveTy
 
     // MARK: - private properties
     fileprivate var _customizing: Bool = true
+    fileprivate let defaultCustomFont: UIFont = UIFont.boldSystemFont(ofSize: 12.0)
     fileprivate var defaultCustomColor: UIColor = .black
+    fileprivate let defaultCustomUnderlineStyle = NSUnderlineStyle.styleNone.rawValue
     
     internal var mentionTapHandler: ((String) -> ())?
     internal var hashtagTapHandler: ((String) -> ())?
@@ -340,10 +366,30 @@ typealias ElementTuple = (range: NSRange, element: ActiveElement, type: ActiveTy
         for (type, elements) in activeElements {
 
             switch type {
-            case .mention: attributes[NSForegroundColorAttributeName] = mentionColor
-            case .hashtag: attributes[NSForegroundColorAttributeName] = hashtagColor
-            case .url: attributes[NSForegroundColorAttributeName] = URLColor
-            case .custom: attributes[NSForegroundColorAttributeName] = customColor[type] ?? defaultCustomColor
+            case .mention:
+                attributes[NSFontAttributeName] = mentionFont ?? font!
+                attributes[NSForegroundColorAttributeName] = mentionColor
+                attributes[NSUnderlineStyleAttributeName] = mentionUnderlineStyle.rawValue
+            case .hashtag:
+                attributes[NSFontAttributeName] = hashtagFont ?? font!
+                attributes[NSForegroundColorAttributeName] = hashtagColor
+                attributes[NSUnderlineStyleAttributeName] = hashtagUnderlineStyle.rawValue
+            case .url:
+                attributes[NSFontAttributeName] = URLFont ?? font!
+                attributes[NSForegroundColorAttributeName] = URLColor
+                attributes[NSUnderlineStyleAttributeName] = URLUnderlineStyle.rawValue
+            case .custom:
+                attributes[NSFontAttributeName] = customFont[type] ?? defaultCustomFont
+                attributes[NSForegroundColorAttributeName] = customColor[type] ?? defaultCustomColor
+                attributes[NSUnderlineStyleAttributeName] = customUnderlineStyle[type]?.rawValue ?? defaultCustomUnderlineStyle
+            }
+            
+            // fix: seems that we lose the font during the tap so we need to set it again
+            switch type {
+            case .mention: attributes[NSFontAttributeName] = mentionFont ?? font!
+            case .hashtag: attributes[NSFontAttributeName] = hashtagFont ?? font!
+            case .url: attributes[NSFontAttributeName] = URLFont ?? font!
+            case .custom: attributes[NSFontAttributeName] = customFont[type] ?? defaultCustomFont
             }
             
             if let highlightFont = hightlightFont {
