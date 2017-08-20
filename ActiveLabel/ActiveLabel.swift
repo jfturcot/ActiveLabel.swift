@@ -109,6 +109,31 @@ typealias ElementTuple = (range: NSRange, element: ActiveElement, type: ActiveTy
         hashtagFilterPredicate = predicate
         updateTextStorage()
     }
+    
+    open func clearEnabledTypes() {
+        enabledTypes = []
+    }
+    
+    open func addEnabledType(_ type: String) {
+        switch type {
+            case "hashtag":
+                enabledTypes.append(.hashtag)
+            case "mention":
+                enabledTypes.append(.mention)
+            case "url":
+                enabledTypes.append(.url)
+            default:
+                enabledTypes.append(.custom(pattern: type))
+        }
+    }
+    
+    open func addCustom(for pattern: String, color: UIColor, selectedColor: UIColor, handler: @escaping (String) -> ()) {
+        let customType = ActiveType.custom(pattern: pattern)
+        enabledTypes.append(customType)
+        customColor[customType] = color
+        customSelectedColor[customType] = selectedColor
+        customTapHandlers[customType] = handler
+    }
 
     // MARK: - override UILabel properties
     override open var text: String? {
