@@ -151,11 +151,12 @@ typealias ElementTuple = (range: NSRange, element: ActiveElement, type: ActiveTy
         }
     }
     
-    open func addCustom(for pattern: String, color: UIColor, selectedColor: UIColor, handler: @escaping (String) -> ()) {
+    open func addCustom(for pattern: String, color: UIColor, selectedColor: UIColor, font: UIFont, handler: @escaping (String) -> ()) {
         let customType = ActiveType.custom(pattern: pattern)
         enabledTypes.append(customType)
         customColor[customType] = color
         customSelectedColor[customType] = selectedColor
+        customFont[customType] = font
         customTapHandlers[customType] = handler
     }
 
@@ -357,7 +358,6 @@ typealias ElementTuple = (range: NSRange, element: ActiveElement, type: ActiveTy
         var range = NSRange(location: 0, length: 0)
         var attributes = mutAttrString.attributes(at: 0, effectiveRange: &range)
         
-        attributes[NSFontAttributeName] = font!
         attributes[NSForegroundColorAttributeName] = textColor
         mutAttrString.addAttributes(attributes, range: range)
 
@@ -382,20 +382,9 @@ typealias ElementTuple = (range: NSRange, element: ActiveElement, type: ActiveTy
                 attributes[NSFontAttributeName] = customFont[type] ?? defaultCustomFont
                 attributes[NSForegroundColorAttributeName] = customColor[type] ?? defaultCustomColor
                 attributes[NSUnderlineStyleAttributeName] = customUnderlineStyle[type]?.rawValue ?? defaultCustomUnderlineStyle
+            default: attributes[NSFontAttributeName] = font!
             }
             
-            // fix: seems that we lose the font during the tap so we need to set it again
-            switch type {
-            case .mention: attributes[NSFontAttributeName] = mentionFont ?? font!
-            case .hashtag: attributes[NSFontAttributeName] = hashtagFont ?? font!
-            case .url: attributes[NSFontAttributeName] = URLFont ?? font!
-            case .custom: attributes[NSFontAttributeName] = customFont[type] ?? defaultCustomFont
-            }
-            
-            if let highlightFont = hightlightFont {
-                attributes[NSFontAttributeName] = highlightFont
-            }
-			
             if let configureLinkAttribute = configureLinkAttribute {
                 attributes = configureLinkAttribute(type, attributes, false)
             }
@@ -485,8 +474,12 @@ typealias ElementTuple = (range: NSRange, element: ActiveElement, type: ActiveTy
             attributes[NSForegroundColorAttributeName] = unselectedColor
         }
         
-        if let highlightFont = hightlightFont {
-            attributes[NSFontAttributeName] = highlightFont
+        switch type {
+        case .mention: attributes[NSFontAttributeName] = mentionFont ?? font!
+        case .hashtag: attributes[NSFontAttributeName] = hashtagFont ?? font!
+        case .url: attributes[NSFontAttributeName] = URLFont ?? font!
+        case .custom: attributes[NSFontAttributeName] = customFont[type] ?? defaultCustomFont
+        default: attributes[NSFontAttributeName] = font!
         }
         
         if let configureLinkAttribute = configureLinkAttribute {
