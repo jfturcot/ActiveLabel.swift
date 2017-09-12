@@ -87,9 +87,15 @@ typealias ElementTuple = (range: NSRange, element: ActiveElement, type: ActiveTy
     @IBInspectable public var highlightFontSize: CGFloat? = nil {
         didSet { updateTextStorage(parseText: false) }
     }
+    @IBInspectable public var highlightFont: UIFont? = nil {
+        didSet { updateTextStorage(parseText: false) }
+    }
     
     // MARK: - Computed Properties
     private var hightlightFont: UIFont? {
+        if let highlightFont = highlightFont {
+            return highlightFont
+        }
         guard let highlightFontName = highlightFontName, let highlightFontSize = highlightFontSize else { return nil }
         return UIFont(name: highlightFontName, size: highlightFontSize)
     }
@@ -382,7 +388,10 @@ typealias ElementTuple = (range: NSRange, element: ActiveElement, type: ActiveTy
                 attributes[NSFontAttributeName] = customFont[type] ?? defaultCustomFont
                 attributes[NSForegroundColorAttributeName] = customColor[type] ?? defaultCustomColor
                 attributes[NSUnderlineStyleAttributeName] = customUnderlineStyle[type]?.rawValue ?? defaultCustomUnderlineStyle
-            default: attributes[NSFontAttributeName] = font!
+            }
+            
+            if let highlightFont = highlightFont {
+                attributes[NSFontAttributeName] = highlightFont
             }
             
             if let configureLinkAttribute = configureLinkAttribute {
@@ -479,7 +488,10 @@ typealias ElementTuple = (range: NSRange, element: ActiveElement, type: ActiveTy
         case .hashtag: attributes[NSFontAttributeName] = hashtagFont ?? font!
         case .url: attributes[NSFontAttributeName] = URLFont ?? font!
         case .custom: attributes[NSFontAttributeName] = customFont[type] ?? defaultCustomFont
-        default: attributes[NSFontAttributeName] = font!
+        }
+        
+        if let highlightFont = highlightFont {
+            attributes[NSFontAttributeName] = highlightFont
         }
         
         if let configureLinkAttribute = configureLinkAttribute {
