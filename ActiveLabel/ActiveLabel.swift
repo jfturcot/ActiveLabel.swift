@@ -13,7 +13,7 @@ public protocol ActiveLabelDelegate: class {
     func didSelect(_ text: String, type: ActiveType)
 }
 
-public typealias ConfigureLinkAttribute = (ActiveType, [String : Any], Bool) -> ([String : Any])
+public typealias ConfigureLinkAttribute = (ActiveType, [NSAttributedStringKey : Any], Bool) -> ([NSAttributedStringKey : Any])
 typealias ElementTuple = (range: NSRange, element: ActiveElement, type: ActiveType)
 
 @IBDesignable open class ActiveLabel: UILabel {
@@ -84,7 +84,7 @@ typealias ElementTuple = (range: NSRange, element: ActiveElement, type: ActiveTy
     @IBInspectable public var highlightFontName: String? = nil {
         didSet { updateTextStorage(parseText: false) }
     }
-    @IBInspectable public var highlightFontSize: CGFloat? = nil {
+    public var highlightFontSize: CGFloat? = nil {
         didSet { updateTextStorage(parseText: false) }
     }
     @IBInspectable public var highlightFont: UIFont? = nil {
@@ -364,34 +364,33 @@ typealias ElementTuple = (range: NSRange, element: ActiveElement, type: ActiveTy
         var range = NSRange(location: 0, length: 0)
         var attributes = mutAttrString.attributes(at: 0, effectiveRange: &range)
         
-        attributes[NSForegroundColorAttributeName] = textColor
+        attributes[NSAttributedStringKey.font] = font!
+        attributes[NSAttributedStringKey.foregroundColor] = textColor
         mutAttrString.addAttributes(attributes, range: range)
-
-        attributes[NSForegroundColorAttributeName] = mentionColor
 
         for (type, elements) in activeElements {
 
             switch type {
             case .mention:
-                attributes[NSFontAttributeName] = mentionFont ?? font!
-                attributes[NSForegroundColorAttributeName] = mentionColor
-                attributes[NSUnderlineStyleAttributeName] = mentionUnderlineStyle.rawValue
+                attributes[NSAttributedStringKey.font] = mentionFont ?? font!
+                attributes[NSAttributedStringKey.foregroundColor] = mentionColor
+                attributes[NSAttributedStringKey.underlineStyle] = mentionUnderlineStyle.rawValue
             case .hashtag:
-                attributes[NSFontAttributeName] = hashtagFont ?? font!
-                attributes[NSForegroundColorAttributeName] = hashtagColor
-                attributes[NSUnderlineStyleAttributeName] = hashtagUnderlineStyle.rawValue
+                attributes[NSAttributedStringKey.font] = hashtagFont ?? font!
+                attributes[NSAttributedStringKey.foregroundColor] = hashtagColor
+                attributes[NSAttributedStringKey.underlineStyle] = hashtagUnderlineStyle.rawValue
             case .url:
-                attributes[NSFontAttributeName] = URLFont ?? font!
-                attributes[NSForegroundColorAttributeName] = URLColor
-                attributes[NSUnderlineStyleAttributeName] = URLUnderlineStyle.rawValue
+                attributes[NSAttributedStringKey.font] = URLFont ?? font!
+                attributes[NSAttributedStringKey.foregroundColor] = URLColor
+                attributes[NSAttributedStringKey.underlineStyle] = URLUnderlineStyle.rawValue
             case .custom:
-                attributes[NSFontAttributeName] = customFont[type] ?? defaultCustomFont
-                attributes[NSForegroundColorAttributeName] = customColor[type] ?? defaultCustomColor
-                attributes[NSUnderlineStyleAttributeName] = customUnderlineStyle[type]?.rawValue ?? defaultCustomUnderlineStyle
+                attributes[NSAttributedStringKey.font] = customFont[type] ?? defaultCustomFont
+                attributes[NSAttributedStringKey.foregroundColor] = customColor[type] ?? defaultCustomColor
+                attributes[NSAttributedStringKey.underlineStyle] = customUnderlineStyle[type]?.rawValue ?? defaultCustomUnderlineStyle
             }
             
             if let highlightFont = highlightFont {
-                attributes[NSFontAttributeName] = highlightFont
+                attributes[NSAttributedStringKey.font] = highlightFont
             }
             
             if let configureLinkAttribute = configureLinkAttribute {
@@ -411,7 +410,7 @@ typealias ElementTuple = (range: NSRange, element: ActiveElement, type: ActiveTy
         var textRange = NSRange(location: 0, length: textLength)
 
         if enabledTypes.contains(.url) {
-            let tuple = ActiveBuilder.createURLElements(from: textString, range: textRange, maximumLenght: urlMaximumLength)
+            let tuple = ActiveBuilder.createURLElements(from: textString, range: textRange, maximumLength: urlMaximumLength)
             let urlElements = tuple.0
             let finalText = tuple.1
             textString = finalText
@@ -442,12 +441,12 @@ typealias ElementTuple = (range: NSRange, element: ActiveElement, type: ActiveTy
         var range = NSRange(location: 0, length: 0)
         var attributes = mutAttrString.attributes(at: 0, effectiveRange: &range)
         
-        let paragraphStyle = attributes[NSParagraphStyleAttributeName] as? NSMutableParagraphStyle ?? NSMutableParagraphStyle()
+        let paragraphStyle = attributes[NSAttributedStringKey.paragraphStyle] as? NSMutableParagraphStyle ?? NSMutableParagraphStyle()
         paragraphStyle.lineBreakMode = NSLineBreakMode.byWordWrapping
         paragraphStyle.alignment = textAlignment
         paragraphStyle.lineSpacing = lineSpacing
         paragraphStyle.minimumLineHeight = minimumLineHeight > 0 ? minimumLineHeight: self.font.pointSize * 1.14
-        attributes[NSParagraphStyleAttributeName] = paragraphStyle
+        attributes[NSAttributedStringKey.paragraphStyle] = paragraphStyle
         mutAttrString.setAttributes(attributes, range: range)
 
         return mutAttrString
@@ -471,7 +470,7 @@ typealias ElementTuple = (range: NSRange, element: ActiveElement, type: ActiveTy
                 let possibleSelectedColor = customSelectedColor[selectedElement.type] ?? customColor[selectedElement.type]
                 selectedColor = possibleSelectedColor ?? defaultCustomColor
             }
-            attributes[NSForegroundColorAttributeName] = selectedColor
+            attributes[NSAttributedStringKey.foregroundColor] = selectedColor
         } else {
             let unselectedColor: UIColor
             switch type {
@@ -480,18 +479,18 @@ typealias ElementTuple = (range: NSRange, element: ActiveElement, type: ActiveTy
             case .url: unselectedColor = URLColor
             case .custom: unselectedColor = customColor[selectedElement.type] ?? defaultCustomColor
             }
-            attributes[NSForegroundColorAttributeName] = unselectedColor
+            attributes[NSAttributedStringKey.foregroundColor] = unselectedColor
         }
         
         switch type {
-        case .mention: attributes[NSFontAttributeName] = mentionFont ?? font!
-        case .hashtag: attributes[NSFontAttributeName] = hashtagFont ?? font!
-        case .url: attributes[NSFontAttributeName] = URLFont ?? font!
-        case .custom: attributes[NSFontAttributeName] = customFont[type] ?? defaultCustomFont
+        case .mention: attributes[NSAttributedStringKey.font] = mentionFont ?? font!
+        case .hashtag: attributes[NSAttributedStringKey.font] = hashtagFont ?? font!
+        case .url: attributes[NSAttributedStringKey.font] = URLFont ?? font!
+        case .custom: attributes[NSAttributedStringKey.font] = customFont[type] ?? defaultCustomFont
         }
         
         if let highlightFont = highlightFont {
-            attributes[NSFontAttributeName] = highlightFont
+            attributes[NSAttributedStringKey.font] = highlightFont
         }
         
         if let configureLinkAttribute = configureLinkAttribute {
