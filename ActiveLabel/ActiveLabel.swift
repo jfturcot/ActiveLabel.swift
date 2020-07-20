@@ -101,15 +101,15 @@ typealias ElementTuple = (range: NSRange, element: ActiveElement, type: ActiveTy
     }
 
     // MARK: - public methods
-    open func handleMentionTap(_ handler: @escaping (String) -> ()) {
+    @objc open func handleMentionTap(_ handler: @escaping (String) -> ()) {
         mentionTapHandler = handler
     }
 
-    open func handleHashtagTap(_ handler: @escaping (String) -> ()) {
+    @objc open func handleHashtagTap(_ handler: @escaping (String) -> ()) {
         hashtagTapHandler = handler
     }
     
-    open func handleURLTap(_ handler: @escaping (URL) -> ()) {
+    @objc open func handleURLTap(_ handler: @escaping (URL) -> ()) {
         urlTapHandler = handler
     }
 
@@ -140,11 +140,11 @@ typealias ElementTuple = (range: NSRange, element: ActiveElement, type: ActiveTy
         updateTextStorage()
     }
     
-    open func clearEnabledTypes() {
+    @objc open func clearEnabledTypes() {
         enabledTypes = []
     }
     
-    open func addEnabledType(_ type: String) {
+    @objc open func addEnabledType(_ type: String) {
         switch type {
             case "hashtag":
                 enabledTypes.append(.hashtag)
@@ -157,7 +157,7 @@ typealias ElementTuple = (range: NSRange, element: ActiveElement, type: ActiveTy
         }
     }
     
-    open func addCustom(for pattern: String, color: UIColor, selectedColor: UIColor, font: UIFont, handler: @escaping (String) -> ()) {
+    @objc open func addCustom(for pattern: String, color: UIColor, selectedColor: UIColor, font: UIFont, handler: @escaping (String) -> ()) {
         let customType = ActiveType.custom(pattern: pattern)
         enabledTypes.append(customType)
         customColor[customType] = color
@@ -226,7 +226,7 @@ typealias ElementTuple = (range: NSRange, element: ActiveElement, type: ActiveTy
 
     // MARK: - customzation
     @discardableResult
-    open func customize(_ block: (_ label: ActiveLabel) -> ()) -> ActiveLabel {
+    @objc open func customize(_ block: (_ label: ActiveLabel) -> ()) -> ActiveLabel {
         _customizing = true
         block(self)
         _customizing = false
@@ -281,6 +281,12 @@ typealias ElementTuple = (range: NSRange, element: ActiveElement, type: ActiveTy
             updateAttributesWhenSelected(false)
             selectedElement = nil
         case .stationary:
+            break
+        case .regionEntered:
+            break
+        case .regionMoved:
+            break
+        case .regionExited:
             break
         }
 
